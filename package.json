@@ -1,0 +1,27 @@
+{
+  "name": "corporate-card-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Corporate Card Management System",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "api:dev": "npm run dev -w packages/api",
+    "api:build": "npm run build -w packages/api",
+    "api:test": "npm run test -w packages/api",
+    "dashboard:dev": "npm run dev -w packages/dashboard",
+    "dashboard:build": "npm run build -w packages/dashboard",
+    "mobile:start": "npm run start -w packages/mobile",
+    "lint": "npm run lint -ws --if-present",
+    "format": "prettier --write \"packages/*/src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.2.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,52 @@
+version: '3.8'
+
+# production 환경 배포용 Docker Compose
+# 주의: 프로덕션에서는 관리형 DB(RDS) 및 ElastiCache 사용 권장
+# 이 파일은 단일 서버 배포 또는 참조용
+
+services:
+  api:
+    image: ${DOCKER_REGISTRY:-ghcr.io}/${GITHUB_REPOSITORY:-corporate-card}/api:latest
+    container_name: corporate-card-api-prod
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE:-corporate_card}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      AWS_REGION: ${AWS_REGION:-ap-northeast-2}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      S3_BUCKET_RECEIPTS: ${S3_BUCKET_RECEIPTS:-corporate-card-receipts}
+      CLOVA_OCR_API_URL: ${CLOVA_OCR_API_URL}
+      CLOVA_OCR_SECRET_KEY: ${CLOVA_OCR_SECRET_KEY}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
