@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../models/transaction.dart';
 
@@ -26,16 +27,14 @@ class TransactionsApi {
     if (endDate != null) params['endDate'] = endDate;
 
     final response = await dio.get('/transactions', queryParameters: params);
-    return PaginatedResponse.fromJson(response.data);
+    // Server wraps in {success, data: {data:[], metadata:{}}}
+    final wrapped = response.data['data'] as Map<String, dynamic>;
+    return PaginatedResponse.fromJson(wrapped);
   }
 
   Future<TransactionDetail> getDetail(String id) async {
     final response = await dio.get('/transactions/$id');
     return TransactionDetail.fromJson(response.data['data']);
-  }
-
-  Future<void> submitReason(String id, String reason) async {
-    await dio.post('/transactions/$id/reason', data: {'reason': reason});
   }
 
   Future<UploadReceiptResponse> uploadReceipt({
@@ -46,11 +45,15 @@ class TransactionsApi {
     required double accuracy,
     Function(int, int)? onSendProgress,
   }) async {
-    final formData = FormData.fromMap({
-      'receipt': await MultipartFile.fromFile(filePath, filename: fileName),
+    final gpsJson = jsonEncode({
       'latitude': latitude,
       'longitude': longitude,
       'accuracy': accuracy,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(filePath, filename: fileName),
+      'gps': gpsJson,
     });
     final response = await dio.post(
       '/receipts/upload',
@@ -99,21 +102,21 @@ class PaginationMeta {
 }
 
 class UploadReceiptResponse {
-  final String transactionId;
   final String receiptId;
-  final String websocketChannel;
+  final String status;
+  final int estimatedTime;
 
   UploadReceiptResponse({
-    required this.transactionId,
     required this.receiptId,
-    required this.websocketChannel,
+    required this.status,
+    required this.estimatedTime,
   });
 
   factory UploadReceiptResponse.fromJson(Map<String, dynamic> json) {
     return UploadReceiptResponse(
-      transactionId: json['transactionId'] as String,
       receiptId: json['receiptId'] as String,
-      websocketChannel: json['websocketChannel'] as String,
+      status: json['status'] as String,
+      estimatedTime: json['estimatedTime'] as int,
     );
   }
 }

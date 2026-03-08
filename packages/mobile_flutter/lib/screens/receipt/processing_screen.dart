@@ -7,13 +7,11 @@ import '../../config/app_config.dart';
 import '../../providers/auth_provider.dart';
 
 class ProcessingScreen extends StatefulWidget {
-  final String transactionId;
-  final String websocketChannel;
+  final String receiptId;
 
   const ProcessingScreen({
     super.key,
-    required this.transactionId,
-    required this.websocketChannel,
+    required this.receiptId,
   });
 
   @override
@@ -38,7 +36,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   void initState() {
     super.initState();
     _steps = [
-      _ProcessingStep(key: 'upload', label: '이미지 업로드'),
+      _ProcessingStep(key: 'upload', label: '이미지 업로드', completed: true),
       _ProcessingStep(key: 'ocr', label: 'OCR 텍스트 추출'),
       _ProcessingStep(key: 'location', label: '위치 검증'),
       _ProcessingStep(key: 'category', label: '업종 검증'),
@@ -62,43 +60,65 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     );
 
     _socket!.onConnect((_) {
-      _socket!.emit('subscribe', {'channels': [widget.websocketChannel]});
-      _updateStep('upload', true);
+      // Server auto-joins user:userId room on auth
     });
 
+    // Listen for transaction status updates
     _socket!.on('transaction:status', (data) {
       if (data is! Map) return;
+      final status = data['status'] as String?;
       final type = data['type'] as String?;
-      switch (type) {
-        case 'ocr_processing':
-          _updateStep('upload', true);
-          break;
-        case 'ocr_complete':
-          _updateStep('ocr', true);
-          break;
-        case 'verification_processing':
-          _updateStep('location', true);
-          _updateStep('category', true);
-          _updateStep('limit', true);
-          break;
-        case 'transaction_complete':
-          _updateStep('final', true);
-          if (mounted) {
-            Navigator.of(context).pushReplacementNamed(
-              '/result',
-              arguments: {
-                'transactionId': data['transactionId'],
-                'status': data['status'],
-                'message': data['message'] ?? '',
-                'rejectionReason': data['rejectionReason'],
-                'amount': data['amount'],
-                'merchantName': data['merchantName'],
-              },
-            );
-          }
-          break;
+
+      // Handle both type-based and status-based events
+      if (type != null) {
+        switch (type) {
+          case 'ocr_processing':
+            _updateStep('upload', true);
+            break;
+          case 'ocr_complete':
+            _updateStep('ocr', true);
+            break;
+          case 'verification_processing':
+            _updateStep('location', true);
+            _updateStep('category', true);
+            _updateStep('limit', true);
+            break;
+          case 'transaction_complete':
+            _completeProcessing(data);
+            break;
+        }
+      } else if (status != null) {
+        // Fallback: handle by status field
+        switch (status) {
+          case 'approved':
+          case 'rejected':
+          case 'flagged':
+            _updateStep('ocr', true);
+            _updateStep('location', true);
+            _updateStep('category', true);
+            _updateStep('limit', true);
+            _completeProcessing(data);
+            break;
+        }
       }
     });
+  }
+
+  void _completeProcessing(Map data) {
+    _updateStep('final', true);
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed(
+        '/result',
+        arguments: {
+          'transactionId': data['transactionId'] ?? '',
+          'status': data['status'] ?? 'approved',
+          'message': data['message'] ?? '처리가 완료되었습니다.',
+          'rejectionReason': data['rejectionReason'],
+          'amount': data['amount'],
+          'merchantName': data['merchantName'],
+        },
+      );
+    }
   }
 
   void _updateStep(String key, bool completed) {

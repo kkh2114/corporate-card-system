@@ -101,8 +101,7 @@ class _ReceiptUploadScreenState extends State<ReceiptUploadScreen> {
         Navigator.of(context).pushReplacementNamed(
           '/processing',
           arguments: {
-            'transactionId': result.transactionId,
-            'websocketChannel': result.websocketChannel,
+            'receiptId': result.receiptId,
           },
         );
       }

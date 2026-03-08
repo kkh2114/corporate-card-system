@@ -46,8 +46,7 @@ class CorporateCardApp extends StatelessWidget {
               final args = settings.arguments as Map<String, dynamic>;
               return MaterialPageRoute(
                 builder: (_) => ProcessingScreen(
-                  transactionId: args['transactionId'] as String,
-                  websocketChannel: args['websocketChannel'] as String,
+                  receiptId: args['receiptId'] as String,
                 ),
               );
             case '/result':

@@ -70,6 +70,16 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateTokens(String newAccessToken, String? newRefreshToken) {
+    _accessToken = newAccessToken;
+    if (newRefreshToken != null) _refreshToken = newRefreshToken;
+    SharedPreferences.getInstance().then((p) {
+      p.setString('accessToken', newAccessToken);
+      if (newRefreshToken != null) p.setString('refreshToken', newRefreshToken);
+    });
+    notifyListeners();
+  }
+
   Future<void> clearAuth() async {
     _user = null;
     _accessToken = null;

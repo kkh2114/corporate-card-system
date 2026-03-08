@@ -42,6 +42,12 @@ export class AuditLog {
   @Column({ type: 'varchar', length: 10, default: 'INFO' })
   severity: string;
 
+  @Column({ name: 'entity_type', type: 'varchar', length: 50, default: 'SYSTEM' })
+  entityType: string;
+
+  @Column({ name: 'entity_id', type: 'uuid', nullable: true })
+  entityId: string;
+
   @Column({ name: 'resource_type', type: 'varchar', length: 50, nullable: true })
   resourceType: string;
 

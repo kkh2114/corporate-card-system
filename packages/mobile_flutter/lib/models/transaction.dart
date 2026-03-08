@@ -32,21 +32,24 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    // Server returns amount/vat as string (decimal), convert to int
+    final rawAmount = json['amount'];
+    final rawVat = json['vat'];
     return Transaction(
       id: json['id'] as String,
       transactionNumber: json['transactionNumber'] as String,
-      employee: TransactionEmployee.fromJson(json['employee']),
-      amount: json['amount'] as int,
-      vat: json['vat'] as int,
-      merchantName: json['merchantName'] as String,
-      category: json['category'] as String,
-      transactionDate: json['transactionDate'] as String,
-      status: json['status'] as String,
+      employee: TransactionEmployee.fromJson(json['employee'] ?? {}),
+      amount: rawAmount is int ? rawAmount : (double.tryParse(rawAmount?.toString() ?? '0') ?? 0).round(),
+      vat: rawVat is int ? rawVat : (double.tryParse(rawVat?.toString() ?? '0') ?? 0).round(),
+      merchantName: json['merchantName'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      transactionDate: json['transactionDate'] as String? ?? '',
+      status: json['status'] as String? ?? '',
       rejectionReason: json['rejectionReason'] as String?,
-      receiptUrl: json['receiptUrl'] as String? ?? '',
-      verification: Verification.fromJson(json['verification'] ?? {}),
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
+      receiptUrl: json['receipt']?['fileUrl'] as String? ?? json['receiptUrl'] as String? ?? '',
+      verification: Verification.fromJson(json['verification'] ?? json),
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
     );
   }
 }
@@ -68,9 +71,9 @@ class TransactionEmployee {
 
   factory TransactionEmployee.fromJson(Map<String, dynamic> json) {
     return TransactionEmployee(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      department: json['department'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      department: json['department'] as String? ?? '',
       employeeId: json['employeeId'] as String?,
       position: json['position'] as String?,
     );
@@ -133,21 +136,23 @@ class TransactionDetail extends Transaction {
   });
 
   factory TransactionDetail.fromJson(Map<String, dynamic> json) {
+    final rawAmount = json['amount'];
+    final rawVat = json['vat'];
     return TransactionDetail(
       id: json['id'] as String,
-      transactionNumber: json['transactionNumber'] as String,
-      employee: TransactionEmployee.fromJson(json['employee']),
-      amount: json['amount'] as int,
-      vat: json['vat'] as int,
-      merchantName: json['merchantName'] as String,
-      category: json['category'] as String,
-      transactionDate: json['transactionDate'] as String,
-      status: json['status'] as String,
+      transactionNumber: json['transactionNumber'] as String? ?? '',
+      employee: TransactionEmployee.fromJson(json['employee'] ?? {}),
+      amount: rawAmount is int ? rawAmount : (double.tryParse(rawAmount?.toString() ?? '0') ?? 0).round(),
+      vat: rawVat is int ? rawVat : (double.tryParse(rawVat?.toString() ?? '0') ?? 0).round(),
+      merchantName: json['merchantName'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      transactionDate: json['transactionDate'] as String? ?? '',
+      status: json['status'] as String? ?? '',
       rejectionReason: json['rejectionReason'] as String?,
-      receiptUrl: json['receiptUrl'] as String? ?? '',
-      verification: Verification.fromJson(json['verification'] ?? {}),
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
+      receiptUrl: json['receipt']?['fileUrl'] as String? ?? json['receiptUrl'] as String? ?? '',
+      verification: Verification.fromJson(json['verification'] ?? json),
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
       businessNumber: json['businessNumber'] as String?,
       receipt: json['receipt'] != null ? Receipt.fromJson(json['receipt']) : null,
       ocrResult: json['ocrResult'] != null ? OcrResult.fromJson(json['ocrResult']) : null,
@@ -176,9 +181,9 @@ class Receipt {
   factory Receipt.fromJson(Map<String, dynamic> json) {
     return Receipt(
       id: json['id'] as String,
-      fileUrl: json['fileUrl'] as String,
-      uploadedAt: json['uploadedAt'] as String,
-      ocrConfidence: (json['ocrConfidence'] as num).toDouble(),
+      fileUrl: json['fileUrl'] as String? ?? '',
+      uploadedAt: json['uploadedAt'] as String? ?? json['createdAt'] as String? ?? '',
+      ocrConfidence: (json['ocrConfidence'] as num?)?.toDouble() ?? 0,
     );
   }
 }
@@ -261,12 +266,12 @@ class VerificationLog {
 
   factory VerificationLog.fromJson(Map<String, dynamic> json) {
     return VerificationLog(
-      type: json['type'] as String,
-      result: json['result'] as String,
+      type: json['verificationType'] as String? ?? json['type'] as String? ?? '',
+      result: json['result'] as String? ?? '',
       expectedValue: json['expectedValue'] as String?,
       actualValue: json['actualValue'] as String?,
-      reason: json['reason'] as String,
-      verifiedAt: json['verifiedAt'] as String,
+      reason: json['reason'] as String? ?? '',
+      verifiedAt: json['verifiedAt'] as String? ?? '',
     );
   }
 }

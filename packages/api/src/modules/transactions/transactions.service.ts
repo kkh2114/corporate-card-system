@@ -69,6 +69,9 @@ export class TransactionsService {
 
   async approve(id: string, approvedBy: string, note?: string): Promise<Transaction> {
     const transaction = await this.findOne(id);
+    if (transaction.status === TransactionStatus.APPROVED || transaction.status === TransactionStatus.REJECTED) {
+      throw new NotFoundException(`Transaction #${id} has already been processed (status: ${transaction.status})`);
+    }
     transaction.status = TransactionStatus.APPROVED;
     transaction.processedBy = approvedBy;
     transaction.processedAt = new Date();
@@ -77,6 +80,9 @@ export class TransactionsService {
 
   async reject(id: string, rejectedBy: string, reason: string): Promise<Transaction> {
     const transaction = await this.findOne(id);
+    if (transaction.status === TransactionStatus.APPROVED || transaction.status === TransactionStatus.REJECTED) {
+      throw new NotFoundException(`Transaction #${id} has already been processed (status: ${transaction.status})`);
+    }
     transaction.status = TransactionStatus.REJECTED;
     transaction.rejectionReason = reason;
     transaction.processedBy = rejectedBy;

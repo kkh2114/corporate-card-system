@@ -13,6 +13,7 @@ export interface CreateAuditLogDto {
   action: string;
   category: string;
   severity?: string;
+  entityType?: string;
   resourceType?: string;
   resourceId?: string;
   description?: string;
@@ -39,6 +40,7 @@ export class AuditLogService {
     const log = this.auditLogRepo.create({
       ...dto,
       severity: dto.severity || 'INFO',
+      entityType: dto.entityType || dto.category || 'SYSTEM',
       checksum,
     });
 

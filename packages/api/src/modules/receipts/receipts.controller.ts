@@ -16,10 +16,13 @@ import { ReceiptsService } from './receipts.service';
 import { UploadReceiptDto } from './dto/upload-receipt.dto';
 import { ConfirmReceiptDto } from './dto/confirm-receipt.dto';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { EmployeeRole } from '@/modules/employees/entities/employee.entity';
 
 @ApiTags('Receipts')
 @ApiBearerAuth()
 @Controller('receipts')
+@Roles(EmployeeRole.EMPLOYEE, EmployeeRole.MANAGER, EmployeeRole.FINANCE, EmployeeRole.ADMIN)
 export class ReceiptsController {
   constructor(private readonly receiptsService: ReceiptsService) {}
 

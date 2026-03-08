@@ -38,9 +38,11 @@ class ApiClient {
                 headers: {'Authorization': 'Bearer $refreshToken'},
               ),
             );
-            final newToken = response.data['data']['accessToken'] as String;
-            _authNotifier.updateToken(newToken);
-            error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+            final data = response.data['data'];
+            final newAccessToken = data['accessToken'] as String;
+            final newRefreshToken = data['refreshToken'] as String?;
+            _authNotifier.updateTokens(newAccessToken, newRefreshToken);
+            error.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
             final retryResponse = await dio.fetch(error.requestOptions);
             return handler.resolve(retryResponse);
           } catch (_) {
