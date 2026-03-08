@@ -39,3 +39,17 @@ docs/.pdca-snapshots/
 
 # Reference documents (planning, specs, AI tool config)
 docs-reference/
+
+# Flutter
+packages/mobile_flutter/.dart_tool/
+packages/mobile_flutter/.packages
+packages/mobile_flutter/build/
+packages/mobile_flutter/android/.gradle/
+packages/mobile_flutter/android/app/build/
+packages/mobile_flutter/android/local.properties
+packages/mobile_flutter/android/key.properties
+packages/mobile_flutter/*.jks
+packages/mobile_flutter/*.keystore
+packages/mobile_flutter/ios/Pods/
+packages/mobile_flutter/ios/.symlinks/
+packages/mobile_flutter/apk-output/
